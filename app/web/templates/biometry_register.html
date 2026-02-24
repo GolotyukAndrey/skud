@@ -1,0 +1,89 @@
+{% extends "base.html" %}
+{% block title %}Регистрация лица | СКУД{% endblock %}
+
+{% block content %}
+<div class="card p-4">
+  <div class="d-flex justify-content-between align-items-start gap-3">
+    <div>
+      <div class="text-secondary small">Пользователь</div>
+      <div class="fw-semibold">{{ user.full_name }}</div>
+    </div>
+    <a class="btn btn-outline-secondary" href="{{ url_for('users.edit', user_id=user.user_id) }}">
+      Назад к пользователю
+    </a>
+  </div>
+
+  <hr>
+
+  <form method="post" enctype="multipart/form-data" class="row g-3">
+    <div class="col-12 col-lg-8">
+      <label class="form-label">Фото лица (JPG/PNG)</label>
+      <input class="form-control" type="file" name="photo" accept=".jpg,.jpeg,.png" required>
+      <div class="form-text">
+        Требование: 1 лицо на фото, хорошая резкость и освещение, лицо достаточно крупно.
+      </div>
+    </div>
+
+    <div class="col-12 col-lg-4 d-flex align-items-end">
+      <button class="btn btn-primary w-100" type="submit">
+        Создать шаблон
+      </button>
+    </div>
+  </form>
+
+  {% if created_template_id %}
+    <div class="alert alert-success mt-3 mb-0">
+      Шаблон создан (ID: <b>{{ created_template_id }}</b>).
+      <a class="ms-2" href="{{ url_for('users.edit', user_id=user.user_id) }}">Перейти к пользователю</a>
+    </div>
+  {% endif %}
+
+  {% if reasons and reasons|length > 0 %}
+    <div class="mt-3">
+      <div class="alert alert-danger mb-3">
+        <div class="fw-semibold mb-1">Отказано: фото не прошло контроль качества</div>
+        <div class="small text-secondary">Шаблон не сохранён. Исправьте причины и повторите попытку.</div>
+      </div>
+
+      <div class="card p-3 mb-3">
+        <div class="fw-semibold mb-2">Причины отказа</div>
+        <ul class="mb-0">
+          {% for r in reasons %}
+            <li>{{ r }}</li>
+          {% endfor %}
+        </ul>
+      </div>
+
+      <div class="card p-3">
+        <div class="fw-semibold mb-2">Рекомендации</div>
+        {% if recommendations and recommendations|length > 0 %}
+          <ul class="mb-0">
+            {% for rec in recommendations %}
+              <li>{{ rec }}</li>
+            {% endfor %}
+          </ul>
+        {% else %}
+          <div class="text-secondary">Повторите фото при лучшем освещении и большей резкости.</div>
+        {% endif %}
+      </div>
+
+      {% if metrics %}
+        <div class="mt-3 text-secondary small">
+          <div class="fw-semibold">Диагностика (для отчёта/отладки):</div>
+          det_score={{ "%.2f"|format(metrics.det_score) if metrics.det_score is defined else "-" }},
+          bbox={{ metrics.bbox_w if metrics.bbox_w is defined else "-" }}×{{ metrics.bbox_h if metrics.bbox_h is defined else "-" }},
+          lap={{ "%.0f"|format(metrics.lap_var) if metrics.lap_var is defined else "-" }},
+          brightness={{ "%.0f"|format(metrics.brightness) if metrics.brightness is defined else "-" }},
+          contrast={{ "%.0f"|format(metrics.contrast) if metrics.contrast is defined else "-" }}
+        </div>
+      {% endif %}
+    </div>
+  {% endif %}
+
+  {% if saved_path and not reasons %}
+    <div class="alert alert-info mt-3 mb-0">
+      Файл сохранён: <span class="text-break">{{ saved_path }}</span>
+    </div>
+  {% endif %}
+</div>
+{% endblock %}

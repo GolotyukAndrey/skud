@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% block title %}{% if zone %}Редактировать{% else %}Добавить{% endif %} зону | СКУД{% endblock %}
+
+{% block content %}
+<div class="mb-3">
+  <h4 class="mb-0">{% if zone %}Редактировать зону{% else %}Новая зона{% endif %}</h4>
+</div>
+
+<div class="card p-4">
+  <form method="post">
+    <div class="row g-3">
+      <div class="col-12 col-lg-6">
+        <label class="form-label">Название</label>
+        <input class="form-control" name="name" value="{{ zone.name if zone else '' }}" placeholder="Например: Серверная">
+      </div>
+
+      <div class="col-12">
+        <label class="form-label">Описание</label>
+        <textarea class="form-control" rows="3" name="description"
+                  placeholder="Опционально">{{ zone.description if zone and zone.description else '' }}</textarea>
+      </div>
+
+      <div class="col-12 d-flex gap-2">
+        <button class="btn btn-primary" type="submit">Сохранить</button>
+        <a class="btn btn-outline-secondary" href="{{ url_for('zones.list') }}">Отмена</a>
+      </div>
+    </div>
+  </form>
+</div>
+{% endblock %}

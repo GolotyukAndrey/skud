@@ -1,0 +1,89 @@
+{% extends "base.html" %}
+{% block title %}Исполнительные устройства | СКУД{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+  <div>
+    <h4 class="mb-0">Исполнительные устройства</h4>
+    <div class="text-secondary">Замки/турникеты (пока можно эмулировать)</div>
+  </div>
+  <a class="btn btn-primary" href="{{ url_for('control_units.create') }}">Добавить</a>
+</div>
+
+<div class="card p-0">
+  <div class="table-responsive">
+    <table class="table table-hover mb-0 align-middle">
+      <thead class="table-light">
+        <tr>
+          <th>Название</th>
+          <th>Тип</th>
+          <th>Endpoint</th>
+          <th>Статус</th>
+          <th class="text-end">Действия</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for u in units %}
+          <tr>
+            <td class="fw-semibold">{{ u.name }}</td>
+
+            <td>
+              <span class="badge badge-soft">
+                {{ unit_types.get(u.unit_type, u.unit_type) }}
+              </span>
+            </td>
+
+            <td class="text-secondary">
+              {% if u.unit_type == 'http' %}
+                {{ u.endpoint or '—' }}
+              {% else %}
+                <span class="text-secondary">—</span>
+              {% endif %}
+            </td>
+
+            <td>
+              {% if u.is_active %}
+                <span class="badge text-bg-success">active</span>
+              {% else %}
+                <span class="badge text-bg-secondary">inactive</span>
+              {% endif %}
+            </td>
+
+            <td class="text-end">
+              <div class="d-inline-flex flex-wrap gap-2 justify-content-end">
+
+                <div class="btn-group" role="group">
+                  <form class="d-inline" method="post"
+                        action="{{ url_for('control_units.test_cmd', unit_id=u.control_unit_id, cmd='open') }}">
+                    <button class="btn btn-sm btn-outline-success" type="submit">TEST OPEN</button>
+                  </form>
+                  <form class="d-inline" method="post"
+                        action="{{ url_for('control_units.test_cmd', unit_id=u.control_unit_id, cmd='deny') }}">
+                    <button class="btn btn-sm btn-outline-warning" type="submit">TEST DENY</button>
+                  </form>
+                </div>
+
+                <a class="btn btn-sm btn-outline-primary"
+                   href="{{ url_for('control_units.edit', unit_id=u.control_unit_id) }}">
+                  Редактировать
+                </a>
+
+                <form class="d-inline" method="post"
+                      action="{{ url_for('control_units.delete', unit_id=u.control_unit_id) }}"
+                      onsubmit="return confirm('Удалить устройство?');">
+                  <button class="btn btn-sm btn-outline-danger" type="submit">Удалить</button>
+                </form>
+
+              </div>
+            </td>
+          </tr>
+        {% else %}
+          <tr>
+            <td colspan="5" class="text-center text-secondary py-4">Устройств пока нет</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

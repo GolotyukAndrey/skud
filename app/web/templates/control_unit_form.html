@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+{% block title %}Исполнительное устройство | СКУД{% endblock %}
+
+{% block content %}
+<div class="mb-3">
+  <h4 class="mb-0">{% if unit %}Редактировать{% else %}Новое{% endif %} исполнительное устройство</h4>
+  <div class="text-secondary">Для HTTP укажи endpoint (позже подключим реальную отправку OPEN/DENY).</div>
+</div>
+
+<div class="card p-4">
+  <form method="post">
+    <div class="row g-3">
+      <div class="col-12 col-lg-6">
+        <label class="form-label">Название</label>
+        <input class="form-control" name="name" value="{{ unit.name if unit else '' }}" placeholder="Например: Турникет 1">
+      </div>
+
+      <div class="col-12 col-lg-3">
+        <label class="form-label">Тип</label>
+        <select class="form-select" name="unit_type">
+          {% for val, label in unit_types %}
+            <option value="{{ val }}" {% if unit and unit.unit_type == val %}selected{% endif %}>{{ label }}</option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <div class="col-12 col-lg-3">
+        <label class="form-label">Активно</label>
+        <div class="form-check mt-2">
+          <input class="form-check-input" type="checkbox" name="is_active" {% if not unit or unit.is_active %}checked{% endif %}>
+          <label class="form-check-label">Да</label>
+        </div>
+      </div>
+
+      <div class="col-12">
+        <label class="form-label">Endpoint (опционально)</label>
+        <input class="form-control" name="endpoint" value="{{ unit.endpoint if unit and unit.endpoint else '' }}"
+               placeholder="Например: http://127.0.0.1:8080/open">
+      </div>
+
+      <div class="col-12 d-flex gap-2">
+        <button class="btn btn-primary" type="submit">Сохранить</button>
+        <a class="btn btn-outline-secondary" href="{{ url_for('control_units.list') }}">Отмена</a>
+      </div>
+    </div>
+  </form>
+</div>
+{% endblock %}

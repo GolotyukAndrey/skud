@@ -1,0 +1,71 @@
+{% extends "base.html" %}
+{% block title %}Точки доступа | СКУД{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+  <div>
+    <h4 class="mb-0">Точки доступа</h4>
+    <div class="text-secondary">Связка: Камера + Зона + Исполнительное устройство</div>
+  </div>
+  <a class="btn btn-primary" href="{{ url_for('access_points.create') }}">Добавить</a>
+</div>
+
+<div class="card p-0">
+  <table class="table table-hover mb-0 align-middle">
+    <thead class="table-light">
+      <tr>
+        <th>Название</th>
+        <th>Камера</th>
+        <th>Зона</th>
+        <th>Устройство</th>
+        <th>Статус</th>
+        <th class="text-end">Действия</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for p in points %}
+      <tr>
+        <td class="fw-semibold">{{ p.name }}</td>
+        <td>{{ p.camera.name }}</td>
+        <td>{{ p.zone.name }}</td>
+        <td>
+          {% if p.control_unit %}
+            {{ p.control_unit.name }}
+          {% else %}
+            <span class="text-secondary">—</span>
+          {% endif %}
+        </td>
+        <td>
+          {% if p.is_active %}
+            <span class="badge text-bg-success">active</span>
+          {% else %}
+            <span class="badge text-bg-secondary">inactive</span>
+          {% endif %}
+        </td>
+        <td class="text-end">
+          <a class="btn btn-sm btn-outline-secondary"
+             href="{{ url_for('access_points.monitor', point_id=p.access_point_id) }}">
+            Мониторинг
+          </a>
+          <a class="btn btn-sm btn-outline-primary"
+             href="{{ url_for('access_points.edit', point_id=p.access_point_id) }}">
+            Редактировать
+          </a>
+          <form class="d-inline" method="post"
+                action="{{ url_for('access_points.delete', point_id=p.access_point_id) }}"
+                onsubmit="return confirm('Удалить точку доступа?');">
+            <button class="btn btn-sm btn-outline-danger">Удалить</button>
+          </form>
+        </td>
+      </tr>
+      {% else %}
+      <tr>
+        <td colspan="6" class="text-center text-secondary py-4">
+          Точек доступа пока нет
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

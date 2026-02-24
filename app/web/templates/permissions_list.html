@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+{% block title %}Права доступа | СКУД{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+  <div>
+    <h4 class="mb-0">Права доступа</h4>
+    <div class="text-secondary">RBAC: роль - зона - разрешение</div>
+  </div>
+  <a class="btn btn-primary" href="{{ url_for('permissions.create') }}">Добавить</a>
+</div>
+
+<div class="card p-0">
+  <table class="table table-hover mb-0">
+    <thead class="table-light">
+      <tr>
+        <th>Роль</th>
+        <th>Зона</th>
+        <th>Разрешено</th>
+        <th class="text-end">Действия</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for rule in rules %}
+      <tr>
+        <td class="fw-semibold">{{ rule.role.name }}</td>
+        <td>{{ rule.zone.name }}</td>
+        <td>
+          {% if rule.is_allowed %}
+            <span class="badge text-bg-success">Да</span>
+          {% else %}
+            <span class="badge text-bg-danger">Нет</span>
+          {% endif %}
+        </td>
+        <td class="text-end">
+          <form method="post" action="{{ url_for('permissions.delete', rule_id=rule.id) }}"
+                onsubmit="return confirm('Удалить правило?');">
+            <button class="btn btn-sm btn-outline-danger">Удалить</button>
+          </form>
+        </td>
+      </tr>
+      {% else %}
+      <tr>
+        <td colspan="4" class="text-center text-secondary py-4">Правил пока нет</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

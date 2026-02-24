@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+{% block title %}Камеры | СКУД{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+  <div>
+    <h4 class="mb-0">Камеры</h4>
+    <div class="text-secondary">Источники видеопотока для точек доступа</div>
+  </div>
+  <a class="btn btn-primary" href="{{ url_for('cameras.create') }}">Добавить</a>
+</div>
+
+<div class="card p-0">
+  <div class="table-responsive">
+    <table class="table table-hover mb-0">
+      <thead class="table-light">
+        <tr>
+          <th>Название</th>
+          <th>Тип</th>
+          <th>Источник</th>
+          <th>Статус</th>
+          <th class="text-end">Действия</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for c in cameras %}
+          <tr>
+            <td class="fw-semibold">{{ c.name }}</td>
+            <td><span class="badge badge-soft">{{ c.source_type }}</span></td>
+            <td class="text-secondary">{{ c.source }}</td>
+            <td>
+              {% if c.is_active %}
+                <span class="badge text-bg-success">active</span>
+              {% else %}
+                <span class="badge text-bg-secondary">inactive</span>
+              {% endif %}
+            </td>
+            <td class="text-end">
+              <a class="btn btn-sm btn-outline-primary" href="{{ url_for('cameras.edit', camera_id=c.camera_id) }}">Редактировать</a>
+              <form class="d-inline" method="post" action="{{ url_for('cameras.delete', camera_id=c.camera_id) }}"
+                    onsubmit="return confirm('Удалить камеру?');">
+                <button class="btn btn-sm btn-outline-danger" type="submit">Удалить</button>
+              </form>
+            </td>
+          </tr>
+        {% else %}
+          <tr>
+            <td colspan="5" class="text-center text-secondary py-4">Камер пока нет</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

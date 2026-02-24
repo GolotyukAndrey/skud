@@ -1,0 +1,217 @@
+{% extends "base.html" %}
+{% block title %}Пользователь | СКУД{% endblock %}
+
+{% block content %}
+
+<form method="post">
+
+  <!-- Карточка пользователя -->
+  <div class="card p-4">
+    <div class="row g-3">
+
+      <div class="col-12 col-lg-6">
+        <label class="form-label">ФИО</label>
+        <input class="form-control" name="full_name"
+               value="{{ user.full_name if user else '' }}"
+               placeholder="Иванов Иван Иванович">
+      </div>
+
+      <div class="col-12 col-lg-3">
+        <label class="form-label">Email</label>
+        <input class="form-control" name="email"
+               value="{{ user.email if user and user.email else '' }}"
+               placeholder="ivanov@mail.ru">
+      </div>
+
+      <div class="col-12 col-lg-3">
+        <label class="form-label">Телефон</label>
+        <input class="form-control" name="phone"
+               value="{{ user.phone if user and user.phone else '' }}"
+               placeholder="+7...">
+      </div>
+
+      <div class="col-12 col-lg-3">
+        <label class="form-label">Активен</label>
+        <div class="form-check mt-2">
+          <input class="form-check-input" type="checkbox" name="is_active"
+                 {% if not user or user.is_active %}checked{% endif %}>
+          <label class="form-check-label">Да</label>
+        </div>
+      </div>
+
+      <div class="col-12 d-flex gap-2">
+        <button class="btn btn-primary" type="submit">Сохранить</button>
+        <a class="btn btn-outline-secondary" href="{{ url_for('users.list') }}">Отмена</a>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Роли пользователя -->
+  <div class="card p-4 mt-3">
+    <div class="d-flex justify-content-between align-items-start gap-3">
+      <div>
+        <div class="fw-semibold">Роли пользователя</div>
+        <div class="text-secondary small">
+          Роли определяют доступ к зонам (RBAC). Можно искать по названию.
+        </div>
+        {% if all_roles is defined %}
+          <div class="mt-2">
+            <span class="badge badge-soft">Всего ролей: {{ all_roles|length }}</span>
+            <span class="badge badge-soft">Назначено: {{ assigned_role_ids|length if assigned_role_ids is defined else 0 }}</span>
+          </div>
+        {% endif %}
+      </div>
+
+      <div class="d-flex gap-2">
+        <button type="button" class="btn btn-outline-secondary btn-sm" onclick="rolesSelectAll(true)">
+          Выбрать всё
+        </button>
+        <button type="button" class="btn btn-outline-secondary btn-sm" onclick="rolesSelectAll(false)">
+          Снять всё
+        </button>
+      </div>
+    </div>
+
+    <hr>
+
+    {% if all_roles is defined and all_roles|length > 0 %}
+      <div class="row g-3">
+        <div class="col-12 col-lg-5">
+          <label class="form-label">Поиск роли</label>
+          <input id="roleSearch" class="form-control" placeholder="Например: Сотрудник" oninput="filterRoles()">
+          <div class="form-text">Фильтр работает только на этой странице.</div>
+        </div>
+        <div class="col-12 col-lg-7 d-flex align-items-end">
+          <div class="alert alert-info py-2 mb-0 w-100">
+            Изменения ролей сохраняются вместе с кнопкой <b>Сохранить</b> в карточке пользователя.
+          </div>
+        </div>
+
+        <div class="col-12">
+          <div class="row g-2" id="rolesGrid">
+            {% for r in all_roles %}
+              <div class="col-12 col-md-6 col-xl-4 role-item" data-role-name="{{ r.name|lower }}">
+                <div class="border rounded-3 p-3 bg-white">
+                  <div class="form-check">
+                    <input class="form-check-input role-checkbox"
+                           type="checkbox"
+                           name="role_ids"
+                           value="{{ r.role_id }}"
+                           id="role_{{ r.role_id }}"
+                           {% if assigned_role_ids is defined and r.role_id in assigned_role_ids %}checked{% endif %}>
+                    <label class="form-check-label fw-semibold" for="role_{{ r.role_id }}">
+                      {{ r.name }}
+                    </label>
+                  </div>
+                  {% if r.description %}
+                    <div class="text-secondary small mt-1">{{ r.description }}</div>
+                  {% endif %}
+                </div>
+              </div>
+            {% endfor %}
+          </div>
+
+          <div id="noRolesFound" class="text-secondary mt-3" style="display:none;">
+            Ничего не найдено по фильтру.
+          </div>
+        </div>
+      </div>
+
+      <script>
+        function filterRoles() {
+          const q = (document.getElementById('roleSearch').value || '').toLowerCase().trim();
+          const items = document.querySelectorAll('.role-item');
+          let visible = 0;
+
+          items.forEach(el => {
+            const name = el.getAttribute('data-role-name') || '';
+            const show = !q || name.includes(q);
+            el.style.display = show ? '' : 'none';
+            if (show) visible += 1;
+          });
+
+          document.getElementById('noRolesFound').style.display = (visible === 0) ? '' : 'none';
+        }
+
+        function rolesSelectAll(flag) {
+          const boxes = document.querySelectorAll('.role-item');
+          boxes.forEach(item => {
+            if (item.style.display === 'none') return;
+            const cb = item.querySelector('.role-checkbox');
+            if (cb) cb.checked = flag;
+          });
+        }
+      </script>
+
+    {% else %}
+      <div class="text-secondary">
+        Ролей пока нет. Сначала создайте роли в разделе “Роли”, затем вернитесь сюда.
+      </div>
+    {% endif %}
+  </div>
+
+</form>
+
+<!-- Биометрия + шаблоны -->
+<div class="card p-4 mt-3">
+  <div class="d-flex justify-content-between align-items-start gap-3">
+    <div>
+      <div class="fw-semibold">Биометрия</div>
+      <div class="text-secondary small">
+        Шаблоны лица (таблица face_templates). Добавляются через “Регистрация лица”.
+      </div>
+      <div class="mt-2">
+        <span class="badge badge-soft">Шаблонов: {{ templates|length if templates is defined else 0 }}</span>
+      </div>
+    </div>
+
+    {% if user %}
+      <a class="btn btn-outline-primary"
+         href="{{ url_for('biometry.register_face', user_id=user.user_id) }}">
+        Биометрия (регистрация лица)
+      </a>
+    {% else %}
+      <button class="btn btn-outline-primary" disabled>Сначала сохраните пользователя</button>
+    {% endif %}
+  </div>
+
+  <hr>
+
+  {% if templates and templates|length > 0 %}
+    <div class="table-responsive">
+      <table class="table table-hover mb-0">
+        <thead class="table-light">
+          <tr>
+            <th>ID</th>
+            <th>Источник</th>
+            <th>Создан</th>
+            <th class="text-end">Действия</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for t in templates %}
+            <tr>
+              <td class="text-secondary">{{ t.template_id }}</td>
+              <td>{{ t.source_note or '-' }}</td>
+              <td class="text-secondary">{{ t.created_at }}</td>
+              <td class="text-end">
+                <form class="d-inline" method="post"
+                      action="{{ url_for('biometry.delete_template', user_id=user.user_id, template_id=t.template_id) }}"
+                      onsubmit="return confirm('Удалить шаблон лица?');">
+                  <button class="btn btn-sm btn-outline-danger" type="submit">Удалить</button>
+                </form>
+              </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  {% else %}
+    <div class="text-secondary">
+      Шаблонов пока нет. Нажмите “Биометрия (регистрация лица)”, чтобы загрузить фото и создать шаблон.
+    </div>
+  {% endif %}
+</div>
+
+{% endblock %}

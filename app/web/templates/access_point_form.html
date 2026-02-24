@@ -1,0 +1,73 @@
+{% extends "base.html" %}
+{% block title %}Точка доступа | СКУД{% endblock %}
+
+{% block content %}
+<div class="mb-3">
+  <h4 class="mb-0">{% if point %}Редактировать{% else %}Новая{% endif %} точка доступа</h4>
+</div>
+
+<div class="card p-4">
+  <form method="post">
+    <div class="row g-3">
+
+      <div class="col-12 col-lg-6">
+        <label class="form-label">Название</label>
+        <input class="form-control" name="name"
+               value="{{ point.name if point else '' }}" placeholder="Например: Главный вход">
+      </div>
+
+      <div class="col-12 col-lg-3">
+        <label class="form-label">Камера</label>
+        <select class="form-select" name="camera_id">
+          {% for c in cameras %}
+          <option value="{{ c.camera_id }}"
+            {% if point and point.camera_id == c.camera_id %}selected{% endif %}>
+            {{ c.name }}
+          </option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <div class="col-12 col-lg-3">
+        <label class="form-label">Зона</label>
+        <select class="form-select" name="zone_id">
+          {% for z in zones %}
+          <option value="{{ z.zone_id }}"
+            {% if point and point.zone_id == z.zone_id %}selected{% endif %}>
+            {{ z.name }}
+          </option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <div class="col-12 col-lg-6">
+        <label class="form-label">Исполнительное устройство</label>
+        <select class="form-select" name="control_unit_id">
+          <option value="">— нет —</option>
+          {% for cu in control_units %}
+          <option value="{{ cu.control_unit_id }}"
+            {% if point and point.control_unit_id == cu.control_unit_id %}selected{% endif %}>
+            {{ cu.name }}
+          </option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <div class="col-12 col-lg-3">
+        <label class="form-label">Активна</label>
+        <div class="form-check mt-2">
+          <input class="form-check-input" type="checkbox" name="is_active"
+                 {% if not point or point.is_active %}checked{% endif %}>
+          <label class="form-check-label">Да</label>
+        </div>
+      </div>
+
+      <div class="col-12 d-flex gap-2">
+        <button class="btn btn-primary" type="submit">Сохранить</button>
+        <a class="btn btn-outline-secondary" href="{{ url_for('access_points.list') }}">Отмена</a>
+      </div>
+
+    </div>
+  </form>
+</div>
+{% endblock %}

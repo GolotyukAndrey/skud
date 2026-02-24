@@ -1,0 +1,111 @@
+{% extends "base.html" %}
+{% block title %}Debug распознавания | СКУД{% endblock %}
+
+{% block content %}
+
+<div class="card p-4 mb-3">
+  <form method="post" enctype="multipart/form-data" class="row g-3 align-items-end">
+
+    <div class="col-12 col-lg-4">
+      <label class="form-label">Точка доступа</label>
+      <select class="form-select" name="access_point_id" required>
+        <option value="">— выберите —</option>
+        {% for ap in access_points %}
+          <option value="{{ ap.access_point_id }}" {% if selected_ap_id == ap.access_point_id|string %}selected{% endif %}>
+            {{ ap.name }} (zone={{ ap.zone.name }}, cam={{ ap.camera.name }})
+          </option>
+        {% endfor %}
+      </select>
+    </div>
+
+    <div class="col-12 col-lg-3">
+      <label class="form-label">Порог similarity</label>
+      <input class="form-control" name="threshold" value="{{ threshold }}" placeholder="0.35">
+      <div class="form-text">Cosine similarity: выше = ближе.</div>
+    </div>
+
+    <div class="col-12 col-lg-5">
+      <label class="form-label">Фото (JPG/PNG)</label>
+      <input class="form-control" type="file" name="photo" accept=".jpg,.jpeg,.png" required>
+    </div>
+
+    <div class="col-12 d-flex gap-2">
+      <button class="btn btn-primary" type="submit">
+        <i class="bi bi-play-circle"></i> Запустить
+      </button>
+      <a class="btn btn-outline-secondary" href="{{ url_for('debug.recognize') }}">
+        Сброс
+      </a>
+      <a class="btn btn-outline-primary" href="{{ url_for('events.list_events') }}">
+        Открыть журнал
+      </a>
+    </div>
+
+  </form>
+</div>
+
+{% if result %}
+  <div class="row g-3">
+
+    <div class="col-12 col-lg-6">
+      <div class="card p-4">
+        <div class="fw-semibold mb-2">Распознавание</div>
+
+        {% if result.user %}
+          <div class="mb-2">
+            <span class="badge text-bg-success">MATCH</span>
+            <span class="ms-2 fw-semibold">{{ result.user.full_name }}</span>
+          </div>
+
+          <div class="text-secondary">
+            user_id: <b>{{ result.user.user_id }}</b><br>
+            template_id: <b>{{ result.template_id }}</b><br>
+            similarity: <b>{{ "%.3f"|format(result.similarity) }}</b><br>
+            templates compared: <b>{{ result.compared_templates }}</b>
+          </div>
+        {% else %}
+          <div class="mb-2">
+            <span class="badge text-bg-secondary">UNKNOWN</span>
+          </div>
+          <div class="text-secondary">
+            similarity(best): <b>{{ "%.3f"|format(result.similarity) }}</b><br>
+            templates compared: <b>{{ result.compared_templates }}</b><br>
+            Причина: ниже порога или нет валидных шаблонов.
+          </div>
+        {% endif %}
+      </div>
+    </div>
+
+    <div class="col-12 col-lg-6">
+      <div class="card p-4">
+        <div class="fw-semibold mb-2">Решение доступа (RBAC)</div>
+
+        {% if decision %}
+          {% if decision.decision == 'ALLOW' %}
+            <div class="mb-2"><span class="badge text-bg-success">ALLOW</span></div>
+          {% elif decision.decision == 'DENY' %}
+            <div class="mb-2"><span class="badge text-bg-danger">DENY</span></div>
+          {% else %}
+            <div class="mb-2"><span class="badge text-bg-secondary">UNKNOWN</span></div>
+          {% endif %}
+
+          <div class="text-secondary">
+            {% for r in decision.reasons %}
+              • {{ r }}<br>
+            {% endfor %}
+          </div>
+        {% endif %}
+
+        {% if saved_event_id %}
+          <hr>
+          <div class="text-secondary">
+            Событие записано в журнал: <b>event_id={{ saved_event_id }}</b>
+          </div>
+        {% endif %}
+      </div>
+    </div>
+
+  </div>
+{% endif %}
+
+{% endblock %}

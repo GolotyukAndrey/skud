@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+{% block title %}Новое правило доступа{% endblock %}
+
+{% block content %}
+<div class="mb-3">
+  <h4 class="mb-0">Новое правило доступа</h4>
+</div>
+
+<div class="card p-4">
+  <form method="post">
+    <div class="row g-3">
+      <div class="col-12 col-lg-4">
+        <label class="form-label">Роль</label>
+        <select class="form-select" name="role_id">
+          {% for r in roles %}
+          <option value="{{ r.role_id }}">{{ r.name }}</option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <div class="col-12 col-lg-4">
+        <label class="form-label">Зона</label>
+        <select class="form-select" name="zone_id">
+          {% for z in zones %}
+          <option value="{{ z.zone_id }}">{{ z.name }}</option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <div class="col-12 col-lg-4">
+        <label class="form-label">Разрешение</label>
+        <select class="form-select" name="is_allowed">
+          <option value="true">Разрешить</option>
+          <option value="false">Запретить</option>
+        </select>
+      </div>
+
+      <div class="col-12 d-flex gap-2">
+        <button class="btn btn-primary" type="submit">Сохранить</button>
+        <a class="btn btn-outline-secondary" href="{{ url_for('permissions.list') }}">Отмена</a>
+      </div>
+    </div>
+  </form>
+</div>
+{% endblock %}

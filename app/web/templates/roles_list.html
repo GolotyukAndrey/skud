@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+{% block title %}Роли | СКУД{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+  <div>
+    <h4 class="mb-0">Роли</h4>
+    <div class="text-secondary">Роли пользователей СКУД</div>
+  </div>
+  <a class="btn btn-primary" href="{{ url_for('roles.create') }}">Добавить</a>
+</div>
+
+<div class="card p-0">
+  <div class="table-responsive">
+    <table class="table table-hover mb-0">
+      <thead class="table-light">
+        <tr>
+          <th>Название</th>
+          <th>Описание</th>
+          <th class="text-end">Действия</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for r in roles %}
+        <tr>
+          <td class="fw-semibold">{{ r.name }}</td>
+          <td class="text-secondary">{{ r.description or '' }}</td>
+          <td class="text-end">
+            <a class="btn btn-sm btn-outline-primary"
+               href="{{ url_for('roles.edit', role_id=r.role_id) }}">Редактировать</a>
+            <form class="d-inline" method="post"
+                  action="{{ url_for('roles.delete', role_id=r.role_id) }}"
+                  onsubmit="return confirm('Удалить роль?');">
+              <button class="btn btn-sm btn-outline-danger" type="submit">Удалить</button>
+            </form>
+          </td>
+        </tr>
+        {% else %}
+        <tr>
+          <td colspan="3" class="text-center text-secondary py-4">Ролей пока нет</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

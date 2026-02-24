@@ -1,0 +1,226 @@
+{% extends "base.html" %}
+{% block title %}Панель | СКУД{% endblock %}
+
+{% block content %}
+
+<div class="row g-3">
+
+  <div class="col-12">
+    <div class="card p-4">
+      <div class="d-flex flex-wrap justify-content-between align-items-center gap-3">
+        <div>
+          <h4 class="mb-1">Добро пожаловать, {{ admin.username }}</h4>
+          <div class="text-secondary">
+            Панель администратора: состояние системы, активные точки доступа и последние события.
+          </div>
+        </div>
+
+        <div class="d-flex align-items-center gap-2">
+          <span class="badge badge-soft px-3 py-2">Web + DB: OK</span>
+          {% if stats and stats.last_event_time %}
+            <span class="badge text-bg-secondary px-3 py-2">
+              Последнее событие: {{ stats.last_event_time.strftime("%Y-%m-%d %H:%M:%S") }}
+            </span>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-12">
+    <div class="row g-3">
+
+      <div class="col-12 col-md-6 col-xl-3">
+        <div class="card p-4 h-100">
+          <div class="text-secondary small">Пользователи</div>
+          <div class="d-flex justify-content-between align-items-end">
+            <div class="display-6 mb-0">{{ stats.users_total or 0 }}</div>
+            <a class="btn btn-sm btn-outline-primary" href="{{ url_for('users.list') }}">Открыть</a>
+          </div>
+          <div class="text-secondary small mt-2">
+            Активных: <b>{{ stats.users_active or 0 }}</b>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-12 col-md-6 col-xl-3">
+        <div class="card p-4 h-100">
+          <div class="text-secondary small">Камеры</div>
+          <div class="d-flex justify-content-between align-items-end">
+            <div class="display-6 mb-0">{{ stats.cameras_total or 0 }}</div>
+            <a class="btn btn-sm btn-outline-primary" href="{{ url_for('cameras.list') }}">Открыть</a>
+          </div>
+          <div class="text-secondary small mt-2">
+            Активных: <b>{{ stats.cameras_active or 0 }}</b>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-12 col-md-6 col-xl-3">
+        <div class="card p-4 h-100">
+          <div class="text-secondary small">Точки доступа</div>
+          <div class="d-flex justify-content-between align-items-end">
+            <div class="display-6 mb-0">{{ stats.access_points_total or 0 }}</div>
+            <a class="btn btn-sm btn-outline-primary" href="{{ url_for('access_points.list') }}">Открыть</a>
+          </div>
+          <div class="text-secondary small mt-2">
+            Активных: <b>{{ stats.access_points_active or 0 }}</b>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-12 col-md-6 col-xl-3">
+        <div class="card p-4 h-100">
+          <div class="text-secondary small">События</div>
+          <div class="d-flex justify-content-between align-items-end">
+            <div class="display-6 mb-0">{{ stats.events_24h or 0 }}</div>
+            <a class="btn btn-sm btn-outline-primary" href="{{ url_for('events.list_events') }}">Журнал</a>
+          </div>
+          <div class="text-secondary small mt-2">
+            За последние 24 часа
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <div class="col-12 col-xl-7">
+    <div class="card p-0">
+      <div class="p-4 pb-2 d-flex justify-content-between align-items-center">
+        <div>
+          <div class="fw-semibold">Активные точки доступа</div>
+          <div class="text-secondary small">Статус автообработки и последнее решение</div>
+        </div>
+        <a class="btn btn-sm btn-outline-primary" href="{{ url_for('access_points.list') }}">
+          Управление
+        </a>
+      </div>
+
+      <div class="table-responsive">
+        <table class="table table-hover mb-0 align-middle">
+          <thead class="table-light">
+            <tr>
+              <th>Точка</th>
+              <th>Зона</th>
+              <th>Авто</th>
+              <th>Последнее</th>
+              <th class="text-end">Действие</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for r in ap_rows %}
+              <tr>
+                <td class="fw-semibold">{{ r.name }}</td>
+                <td>{{ r.zone_name }}</td>
+                <td>
+                  {% if r.worker_running %}
+                    <span class="badge text-bg-success">RUNNING</span>
+                  {% else %}
+                    <span class="badge text-bg-secondary">STOPPED</span>
+                  {% endif %}
+                </td>
+                <td class="text-secondary">
+                  {% if r.last_decision %}
+                    <span class="me-1">
+                      {% if r.last_decision == 'ALLOW' %}
+                        <span class="badge text-bg-success">ALLOW</span>
+                      {% elif r.last_decision == 'DENY' %}
+                        <span class="badge text-bg-danger">DENY</span>
+                      {% else %}
+                        <span class="badge text-bg-secondary">UNKNOWN</span>
+                      {% endif %}
+                    </span>
+                    <span class="small">
+                      {{ r.last_subject or '—' }}
+                      {% if r.last_time %}
+                        · {{ r.last_time.strftime("%Y-%m-%d %H:%M:%S") }}
+                      {% endif %}
+                    </span>
+                  {% else %}
+                    —
+                  {% endif %}
+                </td>
+                <td class="text-end">
+                  <a class="btn btn-sm btn-outline-secondary"
+                     href="{{ url_for('access_points.monitor', point_id=r.access_point_id) }}">
+                    Мониторинг
+                  </a>
+                </td>
+              </tr>
+            {% else %}
+              <tr>
+                <td colspan="5" class="text-center text-secondary py-4">
+                  Точек доступа пока нет. Создайте камеру, зону и точку доступа.
+                </td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+
+    </div>
+  </div>
+
+  <div class="col-12 col-xl-5">
+    <div class="card p-0">
+      <div class="p-4 pb-2 d-flex justify-content-between align-items-center">
+        <div>
+          <div class="fw-semibold">Последние события</div>
+          <div class="text-secondary small">Лента (последние 10)</div>
+        </div>
+        <a class="btn btn-sm btn-outline-primary" href="{{ url_for('events.list_events') }}">Открыть журнал</a>
+      </div>
+
+      <div class="list-group list-group-flush">
+        {% for e in last_events %}
+          <div class="list-group-item">
+            <div class="d-flex justify-content-between align-items-start gap-2">
+              <div>
+                <div class="fw-semibold">
+                  {{ e.user.full_name if e.user else 'UNKNOWN' }}
+                  <span class="ms-2">
+                    {% if e.decision == 'ALLOW' %}
+                      <span class="badge text-bg-success">ALLOW</span>
+                    {% elif e.decision == 'DENY' %}
+                      <span class="badge text-bg-danger">DENY</span>
+                    {% else %}
+                      <span class="badge text-bg-secondary">UNKNOWN</span>
+                    {% endif %}
+                  </span>
+                </div>
+
+                <div class="text-secondary small">
+                  {{ e.access_point.name if e.access_point else '—' }}
+                  · {{ e.occurred_at.strftime("%Y-%m-%d %H:%M:%S") if e.occurred_at else "" }}
+                </div>
+
+                {% if e.details %}
+                  <div class="text-secondary small mt-1">
+                    {% for part in e.details.split('|') %}
+                      <div>{{ part.strip() }}</div>
+                    {% endfor %}
+                  </div>
+                {% endif %}
+              </div>
+            </div>
+          </div>
+        {% else %}
+          <div class="list-group-item text-center text-secondary py-4">
+            Событий пока нет
+          </div>
+        {% endfor %}
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<script>
+  // Автообновление дашборда
+  setTimeout(function () {
+    window.location.reload();
+  }, 3000);
+</script>
+
+{% endblock %}

@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+{% block title %}{% if camera %}Редактировать{% else %}Добавить{% endif %} камеру | СКУД{% endblock %}
+
+{% block content %}
+<div class="mb-3">
+  <h4 class="mb-0">{% if camera %}Редактировать камеру{% else %}Новая камера{% endif %}</h4>
+  <div class="text-secondary">Для webcam в источнике укажи индекс (например: 0). Для RTSP — ссылку.</div>
+</div>
+
+<div class="card p-4">
+  <form method="post">
+    <div class="row g-3">
+      <div class="col-12 col-lg-6">
+        <label class="form-label">Название</label>
+        <input class="form-control" name="name" value="{{ camera.name if camera else '' }}" placeholder="Например: Вход 1">
+      </div>
+
+      <div class="col-12 col-lg-3">
+        <label class="form-label">Тип источника</label>
+        <select class="form-select" name="source_type">
+          {% for val, label in source_types %}
+            <option value="{{ val }}" {% if camera and camera.source_type==val %}selected{% endif %}>{{ label }}</option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <div class="col-12 col-lg-3">
+        <label class="form-label">Активна</label>
+        <div class="form-check mt-2">
+          <input class="form-check-input" type="checkbox" name="is_active" {% if not camera or camera.is_active %}checked{% endif %}>
+          <label class="form-check-label">Да</label>
+        </div>
+      </div>
+
+      <div class="col-12">
+        <label class="form-label">Источник</label>
+        <input class="form-control" name="source" value="{{ camera.source if camera else '' }}"
+               placeholder="webcam: 0 | rtsp: rtsp://... | file: C:\video.mp4">
+      </div>
+
+      <div class="col-12 d-flex gap-2">
+        <button class="btn btn-primary" type="submit">Сохранить</button>
+        <a class="btn btn-outline-secondary" href="{{ url_for('cameras.list') }}">Отмена</a>
+      </div>
+    </div>
+  </form>
+</div>
+{% endblock %}
